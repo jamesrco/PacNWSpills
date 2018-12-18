@@ -1,2 +1,7 @@
+# RStudio, R files
 .Rproj.user
 *.Rproj
+.Rhistory
+
+# README preview docs
+README.html
