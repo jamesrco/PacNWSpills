@@ -1,0 +1,14 @@
+---
+title: "PacNW spills data exploration"
+output: html_notebook
+---
+
+### Some basic cleaning and manipulation of the [Pacific Northwest spills data](https://github.com/jamesrco/PacNWSpills/tree/master/data).
+
+#### First, some data loading and cleaning.
+
+```{r}
+
+
+```
+
