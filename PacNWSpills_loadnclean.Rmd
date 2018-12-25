@@ -5,10 +5,85 @@ output: html_notebook
 
 ### Some basic cleaning and manipulation of the [Pacific Northwest spills data](https://github.com/jamesrco/PacNWSpills/tree/master/data).
 
-#### First, some data loading and cleaning.
+#### Load some necessary libraries
+
+Currently, we'll need stringr, measurements, in addition to base R
 
 ```{r}
 
+library(stringr)
+library(measurements)
 
 ```
 
+#### First, some data loading and cleaning.
+
+##### DEQ spills data
+
+Assumes working directory is location of script; data files in subordinate directory "data".
+
+First, load in data.
+
+```{r}
+
+DEQSpillsData_raw <- read.csv("data/raw/DEQ/OregonSpillsData_ERIS_OC_03APR2018.csv", stringsAsFactors = FALSE)
+DEQSpillsData <- DEQSpillsData_raw
+
+```
+
+Next, clean up data elements and convert to appropriate data types. Easy ones first. Almost all fields need trailing whitespace removed.
+
+```{r}
+
+DEQSpillsData$OERS.Number_Yr <- as.numeric(str_match(DEQSpillsData$OERS.Number,"^[0-9]{4}"))
+DEQSpillsData$OERS.Number_ID <- 
+as.numeric(DEQSpillsData$OERS.Number %>% str_match("[0-9]{4}\\s$") %>% str_match("^[0-9]{4}"))
+
+DEQSpillsData$ReleaseDate <- strptime(DEQSpillsData$Release.On.Date, format = "%a %b %d %Y")
+
+DEQSpillsData$Material <- as.factor(str_trim(DEQSpillsData$Material, side = "right"))
+
+DEQSpillsData$Media <- as.factor(str_trim(DEQSpillsData$Media, side = "right"))
+
+DEQSpillsData$Source <- as.factor(str_trim(DEQSpillsData$Source, side = "right"))
+
+DEQSpillsData$RP.Org <- str_trim(DEQSpillsData$RP.Org, side = "right")
+
+DEQSpillsData$RP.Address <- str_trim(DEQSpillsData$RP.Address, side = "right")
+
+DEQSpillsData$RP.City <- str_trim(DEQSpillsData$RP.City, side = "right")
+
+DEQSpillsData$RP.State <- as.factor(str_trim(DEQSpillsData$RP.State, side = "right"))
+
+DEQSpillsData$RP.Zip <- as.numeric(str_trim(DEQSpillsData$RP.Zip, side = "right"))
+
+DEQSpillsData$Site.Address <- str_trim(DEQSpillsData$Site.Address, side = "right")
+
+DEQSpillsData$Site.City <- str_trim(DEQSpillsData$Site.City, side = "right")
+
+DEQSpillsData$Site.State <- as.factor(str_trim(DEQSpillsData$Site.State, side = "right"))
+
+DEQSpillsData$Site.Zip <- as.numeric(str_trim(DEQSpillsData$Site.Zip, side = "right"))
+
+DEQSpillsData$Latitude <- as.numeric(str_trim(DEQSpillsData$Latitude, side = "right"))
+
+DEQSpillsData$Longitude <- as.numeric(str_trim(DEQSpillsData$Longitude, side = "right"))
+
+```
+
+Quantity is a little bit tougher. We'll need to retain qualitative information to describe special circumstances in some instances (e.g., use of "de minimus") and convert to standard units (liters) in all cases of volume. Also need to control for various differences in punctuation and notation for volumes of 0 or none. Can use the conv_unit function from package "measurements" to convert to standard units once we get our abbreviations in a form the function understands.
+
+```{r}
+
+DEQSpillsData$Qty_numeric <- as.numeric(str_trim(DEQSpillsData$Qty., side = "right"))
+DEQSpillsData$Qty_qualitative <- rep("NA", dim(DEQSpillsData)[1])
+DEQSpillsData$Qty_qualitative[which(is.na(DEQSpillsData$Qty_numeric))] <- str_trim(DEQSpillsData$Qty.[which(is.na(DEQSpillsData$Qty_numeric))], side = "right")
+
+```
+
+
+conv_(as.numeric(str_trim(DEQSpillsData$Qty.[1], side = "right")), str_trim(DEQSpillsData$Unit.Of.Measure[1], side = "right"), "l")
+
+ 
+
+DEQSpillsData$OERS.Number

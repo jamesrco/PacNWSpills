@@ -241,17 +241,66 @@ $(document).ready(function () {
 <!-- rnb-text-begin -->
 <div id="some-basic-cleaning-and-manipulation-of-the-pacific-northwest-spills-data." class="section level3">
 <h3>Some basic cleaning and manipulation of the <a href="https://github.com/jamesrco/PacNWSpills/tree/master/data">Pacific Northwest spills data</a>.</h3>
-<div id="first-some-data-loading-and-cleaning." class="section level4">
-<h4>First, some data loading and cleaning.</h4>
+<div id="load-some-necessary-libraries" class="section level4">
+<h4>Load some necessary libraries</h4>
+<p>Currently, we’ll need stringr, measurements, in addition to base R</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkYXRhbWFydClcblxuYGBgIn0= -->
+<pre class="r"><code>library(datamart)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gbGlicmFyeShkYXRhbWFydCkgOiB0aGVyZSBpcyBubyBwYWNrYWdlIGNhbGxlZCDigJhkYXRhbWFydOKAmVxuIn0= -->
+<pre><code>Error in library(datamart) : there is no package called ‘datamart’</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+</div>
+<div id="first-some-data-loading-and-cleaning." class="section level4">
+<h4>First, some data loading and cleaning.</h4>
+<div id="deq-spills-data" class="section level5">
+<h5>DEQ spills data</h5>
+<p>Assumes working directory is location of script; data files in subordinate directory “data”.</p>
+<p>First, load in data.</p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ERVFTcGlsbHNEYXRhX3JhdyA8LSByZWFkLmNzdihcImRhdGEvcmF3L0RFUS9PcmVnb25TcGlsbHNEYXRhX0VSSVNfT0NfMDNBUFIyMDE4LmNzdlwiLCBzdHJpbmdzQXNGYWN0b3JzID0gRkFMU0UpXG5ERVFTcGlsbHNEYXRhIDwtIERFUVNwaWxsc0RhdGFfcmF3XG5cbmBgYCJ9 -->
+<pre class="r"><code>
+DEQSpillsData_raw &lt;- read.csv(&quot;data/raw/DEQ/OregonSpillsData_ERIS_OC_03APR2018.csv&quot;, stringsAsFactors = FALSE)
+DEQSpillsData &lt;- DEQSpillsData_raw
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Next, clean up data elements and convert to appropriate data types. Easy ones first. Almost all fields need trailing whitespace removed.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuREVRU3BpbGxzRGF0YV9yYXcgPC0gcmVhZC5jc3YoXCJkYXRhL3Jhdy9ERVEvT3JlZ29uU3BpbGxzRGF0YV9FUklTX09DXzAzQVBSMjAxOC5jc3ZcIiwgc3RyaW5nc0FzRmFjdG9ycyA9IEZBTFNFKVxuREVRU3BpbGxzRGF0YSA8LSBERVFTcGlsbHNEYXRhX3Jhd1xuYGBgIn0= -->
+<pre class="r"><code>DEQSpillsData_raw &lt;- read.csv(&quot;data/raw/DEQ/OregonSpillsData_ERIS_OC_03APR2018.csv&quot;, stringsAsFactors = FALSE)
+DEQSpillsData &lt;- DEQSpillsData_raw</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Quantity is a little bit tougher. We’ll need to retain qualitative information to describe special circumstances in some instances (e.g., use of “de minimus”) and convert to standard units (liters) in all cases of volume. Also need to control for various differences in punctuation and notation for volumes of 0 or none. Can use the conv_unit function from package “measurements” to convert to standard units once we get our abbreviations in a form the function understands.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuREVRU3BpbGxzRGF0YSRRdHlfbnVtZXJpYyA8LSBhcy5udW1lcmljKHN0cl90cmltKERFUVNwaWxsc0RhdGEkUXR5Liwgc2lkZSA9IFwicmlnaHRcIikpXG5cbmBgYCJ9 -->
+<pre class="r"><code>DEQSpillsData$Qty_numeric &lt;- as.numeric(str_trim(DEQSpillsData$Qty., side = &quot;right&quot;))
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTkFzIGludHJvZHVjZWQgYnkgY29lcmNpb25cbiJ9 -->
+<pre><code>NAs introduced by coercion</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>conv_(as.numeric(str_trim(DEQSpillsData<span class="math inline">\(Qty.[1], side = &quot;right&quot;)), str_trim(DEQSpillsData\)</span>Unit.Of.Measure[1], side = “right”), “l”)</p>
+<p>DEQSpillsData$OERS.Number</p>
+<!-- rnb-text-end -->
+</div>
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlBhY05XIHNwaWxscyBkYXRhIGV4cGxvcmF0aW9uIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KIyMjIFNvbWUgYmFzaWMgY2xlYW5pbmcgYW5kIG1hbmlwdWxhdGlvbiBvZiB0aGUgW1BhY2lmaWMgTm9ydGh3ZXN0IHNwaWxscyBkYXRhXShodHRwczovL2dpdGh1Yi5jb20vamFtZXNyY28vUGFjTldTcGlsbHMvdHJlZS9tYXN0ZXIvZGF0YSkuDQoNCiMjIyMgRmlyc3QsIHNvbWUgZGF0YSBsb2FkaW5nIGFuZCBjbGVhbmluZy4NCg0KYGBge3J9DQoNCg0KYGBgDQoNCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlBhY05XIHNwaWxscyBkYXRhIGV4cGxvcmF0aW9uIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KIyMjIFNvbWUgYmFzaWMgY2xlYW5pbmcgYW5kIG1hbmlwdWxhdGlvbiBvZiB0aGUgW1BhY2lmaWMgTm9ydGh3ZXN0IHNwaWxscyBkYXRhXShodHRwczovL2dpdGh1Yi5jb20vamFtZXNyY28vUGFjTldTcGlsbHMvdHJlZS9tYXN0ZXIvZGF0YSkuDQoNCiMjIyMgTG9hZCBzb21lIG5lY2Vzc2FyeSBsaWJyYXJpZXMNCg0KQ3VycmVudGx5LCB3ZSdsbCBuZWVkIHN0cmluZ3IsIG1lYXN1cmVtZW50cywgaW4gYWRkaXRpb24gdG8gYmFzZSBSDQoNCmBgYHtyfQ0KDQpsaWJyYXJ5KHN0cmluZ3IpDQpsaWJyYXJ5KG1lYXN1cmVtZW50cykNCg0KYGBgDQoNCiMjIyMgRmlyc3QsIHNvbWUgZGF0YSBsb2FkaW5nIGFuZCBjbGVhbmluZy4NCg0KIyMjIyMgREVRIHNwaWxscyBkYXRhDQoNCkFzc3VtZXMgd29ya2luZyBkaXJlY3RvcnkgaXMgbG9jYXRpb24gb2Ygc2NyaXB0OyBkYXRhIGZpbGVzIGluIHN1Ym9yZGluYXRlIGRpcmVjdG9yeSAiZGF0YSIuDQoNCkZpcnN0LCBsb2FkIGluIGRhdGEuDQoNCmBgYHtyfQ0KDQpERVFTcGlsbHNEYXRhX3JhdyA8LSByZWFkLmNzdigiZGF0YS9yYXcvREVRL09yZWdvblNwaWxsc0RhdGFfRVJJU19PQ18wM0FQUjIwMTguY3N2Iiwgc3RyaW5nc0FzRmFjdG9ycyA9IEZBTFNFKQ0KREVRU3BpbGxzRGF0YSA8LSBERVFTcGlsbHNEYXRhX3Jhdw0KDQpgYGANCg0KTmV4dCwgY2xlYW4gdXAgZGF0YSBlbGVtZW50cyBhbmQgY29udmVydCB0byBhcHByb3ByaWF0ZSBkYXRhIHR5cGVzLiBFYXN5IG9uZXMgZmlyc3QuIEFsbW9zdCBhbGwgZmllbGRzIG5lZWQgdHJhaWxpbmcgd2hpdGVzcGFjZSByZW1vdmVkLg0KDQpgYGB7cn0NCg0KREVRU3BpbGxzRGF0YSRPRVJTLk51bWJlcl9ZciA8LSBhcy5udW1lcmljKHN0cl9tYXRjaChERVFTcGlsbHNEYXRhJE9FUlMuTnVtYmVyLCJeWzAtOV17NH0iKSkNCkRFUVNwaWxsc0RhdGEkT0VSUy5OdW1iZXJfSUQgPC0gDQphcy5udW1lcmljKERFUVNwaWxsc0RhdGEkT0VSUy5OdW1iZXIgJT4lIHN0cl9tYXRjaCgiWzAtOV17NH1cXHMkIikgJT4lIHN0cl9tYXRjaCgiXlswLTldezR9IikpDQoNCkRFUVNwaWxsc0RhdGEkUmVsZWFzZURhdGUgPC0gc3RycHRpbWUoREVRU3BpbGxzRGF0YSRSZWxlYXNlLk9uLkRhdGUsIGZvcm1hdCA9ICIlYSAlYiAlZCAlWSIpDQoNCkRFUVNwaWxsc0RhdGEkTWF0ZXJpYWwgPC0gYXMuZmFjdG9yKHN0cl90cmltKERFUVNwaWxsc0RhdGEkTWF0ZXJpYWwsIHNpZGUgPSAicmlnaHQiKSkNCg0KREVRU3BpbGxzRGF0YSRNZWRpYSA8LSBhcy5mYWN0b3Ioc3RyX3RyaW0oREVRU3BpbGxzRGF0YSRNZWRpYSwgc2lkZSA9ICJyaWdodCIpKQ0KDQpERVFTcGlsbHNEYXRhJFNvdXJjZSA8LSBhcy5mYWN0b3Ioc3RyX3RyaW0oREVRU3BpbGxzRGF0YSRTb3VyY2UsIHNpZGUgPSAicmlnaHQiKSkNCg0KREVRU3BpbGxzRGF0YSRSUC5PcmcgPC0gc3RyX3RyaW0oREVRU3BpbGxzRGF0YSRSUC5PcmcsIHNpZGUgPSAicmlnaHQiKQ0KDQpERVFTcGlsbHNEYXRhJFJQLkFkZHJlc3MgPC0gc3RyX3RyaW0oREVRU3BpbGxzRGF0YSRSUC5BZGRyZXNzLCBzaWRlID0gInJpZ2h0IikNCg0KREVRU3BpbGxzRGF0YSRSUC5DaXR5IDwtIHN0cl90cmltKERFUVNwaWxsc0RhdGEkUlAuQ2l0eSwgc2lkZSA9ICJyaWdodCIpDQoNCkRFUVNwaWxsc0RhdGEkUlAuU3RhdGUgPC0gYXMuZmFjdG9yKHN0cl90cmltKERFUVNwaWxsc0RhdGEkUlAuU3RhdGUsIHNpZGUgPSAicmlnaHQiKSkNCg0KREVRU3BpbGxzRGF0YSRSUC5aaXAgPC0gYXMubnVtZXJpYyhzdHJfdHJpbShERVFTcGlsbHNEYXRhJFJQLlppcCwgc2lkZSA9ICJyaWdodCIpKQ0KDQpERVFTcGlsbHNEYXRhJFNpdGUuQWRkcmVzcyA8LSBzdHJfdHJpbShERVFTcGlsbHNEYXRhJFNpdGUuQWRkcmVzcywgc2lkZSA9ICJyaWdodCIpDQoNCkRFUVNwaWxsc0RhdGEkU2l0ZS5DaXR5IDwtIHN0cl90cmltKERFUVNwaWxsc0RhdGEkU2l0ZS5DaXR5LCBzaWRlID0gInJpZ2h0IikNCg0KREVRU3BpbGxzRGF0YSRTaXRlLlN0YXRlIDwtIGFzLmZhY3RvcihzdHJfdHJpbShERVFTcGlsbHNEYXRhJFNpdGUuU3RhdGUsIHNpZGUgPSAicmlnaHQiKSkNCg0KREVRU3BpbGxzRGF0YSRTaXRlLlppcCA8LSBhcy5udW1lcmljKHN0cl90cmltKERFUVNwaWxsc0RhdGEkU2l0ZS5aaXAsIHNpZGUgPSAicmlnaHQiKSkNCg0KREVRU3BpbGxzRGF0YSRMYXRpdHVkZSA8LSBhcy5udW1lcmljKHN0cl90cmltKERFUVNwaWxsc0RhdGEkTGF0aXR1ZGUsIHNpZGUgPSAicmlnaHQiKSkNCg0KREVRU3BpbGxzRGF0YSRMb25naXR1ZGUgPC0gYXMubnVtZXJpYyhzdHJfdHJpbShERVFTcGlsbHNEYXRhJExvbmdpdHVkZSwgc2lkZSA9ICJyaWdodCIpKQ0KDQpgYGANCg0KUXVhbnRpdHkgaXMgYSBsaXR0bGUgYml0IHRvdWdoZXIuIFdlJ2xsIG5lZWQgdG8gcmV0YWluIHF1YWxpdGF0aXZlIGluZm9ybWF0aW9uIHRvIGRlc2NyaWJlIHNwZWNpYWwgY2lyY3Vtc3RhbmNlcyBpbiBzb21lIGluc3RhbmNlcyAoZS5nLiwgdXNlIG9mICJkZSBtaW5pbXVzIikgYW5kIGNvbnZlcnQgdG8gc3RhbmRhcmQgdW5pdHMgKGxpdGVycykgaW4gYWxsIGNhc2VzIG9mIHZvbHVtZS4gQWxzbyBuZWVkIHRvIGNvbnRyb2wgZm9yIHZhcmlvdXMgZGlmZmVyZW5jZXMgaW4gcHVuY3R1YXRpb24gYW5kIG5vdGF0aW9uIGZvciB2b2x1bWVzIG9mIDAgb3Igbm9uZS4gQ2FuIHVzZSB0aGUgY29udl91bml0IGZ1bmN0aW9uIGZyb20gcGFja2FnZSAibWVhc3VyZW1lbnRzIiB0byBjb252ZXJ0IHRvIHN0YW5kYXJkIHVuaXRzIG9uY2Ugd2UgZ2V0IG91ciBhYmJyZXZpYXRpb25zIGluIGEgZm9ybSB0aGUgZnVuY3Rpb24gdW5kZXJzdGFuZHMuDQoNCmBgYHtyfQ0KDQpERVFTcGlsbHNEYXRhJFF0eV9udW1lcmljIDwtIGFzLm51bWVyaWMoc3RyX3RyaW0oREVRU3BpbGxzRGF0YSRRdHkuLCBzaWRlID0gInJpZ2h0IikpDQpERVFTcGlsbHNEYXRhJFF0eV9xdWFsaXRhdGl2ZSA8LSByZXAoIk5BIiwgZGltKERFUVNwaWxsc0RhdGEpWzFdKQ0KREVRU3BpbGxzRGF0YSRRdHlfcXVhbGl0YXRpdmVbd2hpY2goaXMubmEoREVRU3BpbGxzRGF0YSRRdHlfbnVtZXJpYykpXSA8LSBzdHJfdHJpbShERVFTcGlsbHNEYXRhJFF0eS5bd2hpY2goaXMubmEoREVRU3BpbGxzRGF0YSRRdHlfbnVtZXJpYykpXSwgc2lkZSA9ICJyaWdodCIpDQoNCmBgYA0KDQoNCmNvbnZfKGFzLm51bWVyaWMoc3RyX3RyaW0oREVRU3BpbGxzRGF0YSRRdHkuWzFdLCBzaWRlID0gInJpZ2h0IikpLCBzdHJfdHJpbShERVFTcGlsbHNEYXRhJFVuaXQuT2YuTWVhc3VyZVsxXSwgc2lkZSA9ICJyaWdodCIpLCAibCIpDQoNCiANCg0KREVRU3BpbGxzRGF0YSRPRVJTLk51bWJlcg0K</div>
 
 
 
