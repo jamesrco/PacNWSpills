@@ -81,9 +81,92 @@ DEQSpillsData$Qty_qualitative[which(is.na(DEQSpillsData$Qty_numeric))] <- str_tr
 
 ```
 
+First, let's take a look at what kind of information we have in the qualitative "quantity" field.
 
-conv_(as.numeric(str_trim(DEQSpillsData$Qty.[1], side = "right")), str_trim(DEQSpillsData$Unit.Of.Measure[1], side = "right"), "l")
+```{r}
 
- 
+print(as.data.frame(table(DEQSpillsData$Qty_qualitative)))
 
-DEQSpillsData$OERS.Number
+```
+
+How many total entries do we have to deal with?
+
+```{r}
+
+sum(as.data.frame(table(DEQSpillsData$Qty_qualitative))$Freq) -
+  sum(DEQSpillsData$Qty_qualitative=="NA" & is.numeric(DEQSpillsData$Qty_numeric))
+
+```
+
+Okay, so we've got a bunch of stuff to deal with. Let's work through as many of these as we can without manually correcting or editing individual data elements. First, deal with blanks (assumed to mean no release) and harmonize numeric quantity with any instances of "None" or "none" in qualitative field:
+
+```{r}
+
+sum(DEQSpillsData$Qty_qualitative=="", na.rm = TRUE)
+
+DEQSpillsData$Qty_numeric[DEQSpillsData$Qty_qualitative==""] <- 0
+
+```
+
+```{r}
+
+length(grep("^[N|n]one",DEQSpillsData$Qty_qualitative))
+length(grep("^(?i)No spill",DEQSpillsData$Qty_qualitative))
+
+DEQSpillsData$Qty_numeric[grepl("^[N|n]one",DEQSpillsData$Qty_qualitative)] <- 0
+DEQSpillsData$Qty_numeric[grepl("^(?i)No spill",DEQSpillsData$Qty_qualitative)] <- 0
+DEQSpillsData$Qty_qualitative[grepl("^[N|n]one",DEQSpillsData$Qty_qualitative)] <- "None"
+DEQSpillsData$Qty_qualitative[grepl("^(?i)No spill",DEQSpillsData$Qty_qualitative)] <- "None"
+
+
+```
+
+Also, standardize notation for cases where some variation of "Unknown" was reported:
+
+```{r}
+
+length(grep("^(?i)Unk",DEQSpillsData$Qty_qualitative))
+length(grep("^(?i)Ukn",DEQSpillsData$Qty_qualitative))
+sum(DEQSpillsData$Qty_qualitative=="?", na.rm = TRUE)
+
+DEQSpillsData$Qty_qualitative[grepl("(?i)Unk",DEQSpillsData$Qty_qualitative)] <- "Unknown"
+DEQSpillsData$Qty_qualitative[grepl("(?i)Ukn",DEQSpillsData$Qty_qualitative)] <- "Unknown"
+DEQSpillsData$Qty_qualitative[DEQSpillsData$Qty_qualitative=="?"] <- "Unknown"
+
+```
+
+Instances of some variation of "trace" or "de minimis":
+
+```{r}
+
+sum(DEQSpillsData$Qty_qualitative %in% c("Trace", "trace", "tr", "De minimis", "de minimis", "deminimis", 
+                                         "Deminimis", "Deminimus", "De minimus", "deminimus", "minimal", "Minimal"))
+
+DEQSpillsData$Qty_qualitative[DEQSpillsData$Qty_qualitative %in% c("Trace", "trace", "tr", "De minimis",
+                                         "de minimis", "deminimis", "Deminimis", "Deminimus", "De minimus",
+                                         "deminimus", "minimal", "Minimal")] <- "De minimis"
+
+```
+
+Now, let's take a look again and see where we stand.
+
+```{r}
+
+print(as.data.frame(table(DEQSpillsData$Qty_qualitative)))
+
+```
+
+How many total entries haven't we dealt with?
+
+```{r}
+
+sum(as.data.frame(table(DEQSpillsData$Qty_qualitative))$Freq) -
+  sum(DEQSpillsData$Qty_qualitative=="NA" & is.numeric(DEQSpillsData$Qty_numeric)) -
+  sum(DEQSpillsData$Qty_qualitative=="" & DEQSpillsData$Qty_numeric==0) - 
+  sum(grepl("^[N|n]one",DEQSpillsData$Qty_qualitative) & DEQSpillsData$Qty_numeric==0) -
+  sum(DEQSpillsData$Qty_qualitative=="Unknown") -
+  sum(DEQSpillsData$Qty_qualitative=="De minimis")
+  
+```
+
+This is a much more manageable number.
