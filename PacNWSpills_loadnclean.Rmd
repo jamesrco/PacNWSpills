@@ -169,4 +169,48 @@ sum(as.data.frame(table(DEQSpillsData$Qty_qualitative))$Freq) -
   
 ```
 
-This is a much more manageable number.
+This is a much more manageable number. Let's address some additional issues categorically before we get to correcting individual data elements.
+
+First, address records where a comma appears in the quantity.
+
+```{r}
+
+length(grep("^[0-9]{1,3}(,[0-9]{3})*$",DEQSpillsData$Qty_qualitative))
+ind_Qtycommas <- grep("^[0-9]{1,3}(,[0-9]{3})*$",DEQSpillsData$Qty_qualitative) # obtain, store index to these records
+
+DEQSpillsData$Qty_qualitative[ind_Qtycommas]
+str_replace_all(DEQSpillsData$Qty_qualitative[ind_Qtycommas],",","")
+
+DEQSpillsData$Qty_numeric[ind_Qtycommas] <-
+  as.numeric(str_replace_all(DEQSpillsData$Qty_qualitative[ind_Qtycommas],",",""))
+DEQSpillsData$Qty_qualitative[ind_Qtycommas] <- NA
+
+  
+```
+
+Address quantities reported as ranges. In these cases, we'll split the difference of the two numbers (arithmetic mean) and then note in the qualitative field that these quantities are "Approxmiate"; we'll also address some other values which were entered as approximate using various notations.
+
+```{r}
+
+length(grep("^[0-9]*\\s*\\-\\s*[0-9]*$",DEQSpillsData$Qty_qualitative))
+ind_Qtyranges <- grep("^[0-9]*\\s*\\-\\s*[0-9]*$",DEQSpillsData$Qty_qualitative)
+DEQSpillsData$Qty_qualitative[ind_Qtyranges]
+
+Qtyrange_lo <- str_extract(DEQSpillsData$Qty_qualitative[ind_Qtyranges],"^[0-9]*")
+Qtyrange_hi <- str_extract(DEQSpillsData$Qty_qualitative[ind_Qtyranges],"[0-9]*$")
+Qtyrange_mean <- (as.numeric(Qtyrange_lo)+as.numeric(Qtyrange_hi))/2
+
+Qtyrange_mean
+
+DEQSpillsData$Qty_numeric[ind_Qtyranges] <- Qtyrange_mean
+DEQSpillsData$Qty_qualitative[ind_Qtyranges] <- c("Approximate")
+
+# some additional cases of approximate values
+
+
+  
+```
+
+
+
+
