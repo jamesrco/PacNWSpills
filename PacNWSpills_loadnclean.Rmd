@@ -7,11 +7,13 @@ output: html_notebook
 
 #### Load some necessary libraries
 
-Currently, we'll need stringr, measurements, in addition to base R
+Currently, we'll need stringr, dplyr, measurements, in addition to base R. Some of these have quite a few dependencies.
 
 ```{r}
 
 library(stringr)
+library(dplyr)
+library(lubridate)
 library(measurements)
 
 ```
@@ -31,7 +33,7 @@ DEQSpillsData <- DEQSpillsData_raw
 
 ```
 
-Next, clean up data elements and convert to appropriate data types. Easy ones first. Almost all fields need trailing whitespace removed.
+Next, clean up data elements and convert to appropriate data types. Easy ones first; we'll deal with the Quantity field and some others later. We can see right off the bat that almost all fields need trailing whitespace removed.
 
 ```{r}
 
@@ -39,7 +41,7 @@ DEQSpillsData$OERS.Number_Yr <- as.numeric(str_match(DEQSpillsData$OERS.Number,"
 DEQSpillsData$OERS.Number_ID <- 
 as.numeric(DEQSpillsData$OERS.Number %>% str_match("[0-9]{4}\\s$") %>% str_match("^[0-9]{4}"))
 
-DEQSpillsData$ReleaseDate <- strptime(DEQSpillsData$Release.On.Date, format = "%a %b %d %Y")
+DEQSpillsData$ReleaseDate <- mdy(DEQSpillsData$Release.On.Date)
 
 DEQSpillsData$Material <- as.factor(str_trim(DEQSpillsData$Material, side = "right"))
 
@@ -71,7 +73,46 @@ DEQSpillsData$Longitude <- as.numeric(str_trim(DEQSpillsData$Longitude, side = "
 
 ```
 
-Quantity is a little bit tougher. We'll need to retain qualitative information to describe special circumstances in some instances (e.g., use of "de minimus") and convert to standard units (liters) in all cases of volume. Also need to control for various differences in punctuation and notation for volumes of 0 or none. Can use the conv_unit function from package "measurements" to convert to standard units once we get our abbreviations in a form the function understands.
+We can now eliminate some duplicate entries. Some appear to have been created for an earlier export to the PS/BC Oil Spill Task Force database.
+
+How many duplicates do we have, to start?
+
+```{r}
+
+sum(duplicated(DEQSpillsData$OERS.Number))
+
+```
+
+Let's get rid of the easiest/most obvious cases first.
+
+```{r}
+
+# Eliminate true duplicates
+DEQSpillsData <- DEQSpillsData %>% distinct(.keep_all = TRUE) # not that many of these
+
+# Eliminate some duplicate entries that seem to have been created for earlier export for the PS/BC Oil Spill Database
+DEQSpillsData <- DEQSpillsData[!((duplicated(DEQSpillsData$OERS.Number) | duplicated(DEQSpillsData$OERS.Number, fromLast = TRUE)) &
+                                 DEQSpillsData$Media == "Coding for the PS/BC Oil Spill Database"),]
+
+```
+
+Let's see how many duplicates remain, at least according to OERS number:
+
+```{r}
+
+sum(duplicated(DEQSpillsData$OERS.Number))
+
+```
+
+Now we'll have to tackle some more difficult cases, in which some data will likely have to be merged. We also have some *apparent* duplicates that aren't really duplicates, e.g., separate entries for the same incident where more than one product was released. In addition, the media classifications used prior to ca. 2010 apparently led to the creation of quasi-duplicate entries for each spill that was fully contained to pavement or other secondary containment.
+
+```{r}
+
+sum(duplicated(DEQSpillsData$OERS.Number))
+
+```
+
+The quantity field is a little bit tougher. We'll need to retain qualitative information to describe special circumstances in some instances (e.g., use of "de minimus") and convert to standard units (liters) in all cases of volume. Also need to control for various differences in punctuation and notation for volumes of 0 or none. Can use the conv_unit function from package "measurements" to convert to standard units once we get our abbreviations in a form the function understands.
 
 ```{r}
 
@@ -185,7 +226,6 @@ DEQSpillsData$Qty_numeric[ind_Qtycommas] <-
   as.numeric(str_replace_all(DEQSpillsData$Qty_qualitative[ind_Qtycommas],",",""))
 DEQSpillsData$Qty_qualitative[ind_Qtycommas] <- NA
 
-  
 ```
 
 Address quantities reported as ranges. In these cases, we'll split the difference of the two numbers (arithmetic mean) and then note in the qualitative field that these quantities are "Approxmiate"; we'll also address some other values which were entered as approximate using various notations.
@@ -205,12 +245,18 @@ Qtyrange_mean
 DEQSpillsData$Qty_numeric[ind_Qtyranges] <- Qtyrange_mean
 DEQSpillsData$Qty_qualitative[ind_Qtyranges] <- c("Approximate")
 
-# some additional cases of approximate values
-
-
-  
 ```
 
+Set the Qty_qualitative field to NA for entries which have quantities of 0.
 
+```{r}
+
+length(DEQSpillsData$Qty_numeric[DEQSpillsData$Qty_numeric==0 & DEQSpillsData$Qty_qualitative==""])
+
+```
+
+A quick inspection of the data reveals several additional issues: There are quite a few entries with the same OERS number that appear to be at least partial duplicates, and there are several entries with various quantities described in the free text "Description" field without corresponding quantity data in the "Qty." field. Both need to be addressed somehow.
+
+DEQSpillsData$Qty_qualitative[DEQSpillsData$Qty_qualitative!="NA"]
 
 
